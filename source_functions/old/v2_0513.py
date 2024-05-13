@@ -31,7 +31,7 @@ def add_to_shopping_cart():
   if not (flask.request.args and "session_id" in flask.request.args):
     return flask.jsonify({"status": "error: session_id not found"})
   session_id = flask.request.args["session_id"]
-  session_doc_ref = db.collection("store_sessions").document(session_id)
+  session_doc_ref = db.collection("google_store_sessions").document(session_id)
   session_doc = session_doc_ref.get().to_dict()
 
   if "product" not in flask.request.get_json():
@@ -40,21 +40,6 @@ def add_to_shopping_cart():
   if "quantity" not in flask.request.get_json():
     return {"status": "error: Missing quantity"}
   quantity = flask.request.get_json()["quantity"]
-
-  ### 開発中 ###
-  product_doc_ref = db.collection('products').document(product)
-  product_dict = product_doc_ref.get().to_dict()
-
-  print(product_dict)
-  product_dict["quantity"] = product_dict["quantity"] - quantity
-  print(product_dict)
-
-  if product_dict["quantity"] < 0: 
-    return {"status": "error: not enough product stock"}
-  else:
-    product_doc_ref.set(product_dict, merge=True)
-    print("complate update!")
-  #############
 
   shopping_cart = {}
   if session_doc and "shopping_cart" in session_doc:
@@ -77,7 +62,7 @@ def view_shopping_cart():
   if not (flask.request.args and "session_id" in flask.request.args):
     return flask.jsonify({"status": "error: session_id not found"})
   session_id = flask.request.args["session_id"]
-  session_doc_ref = db.collection("store_sessions").document(session_id)
+  session_doc_ref = db.collection("google_store_sessions").document(session_id)
   session_doc = session_doc_ref.get().to_dict()
 
   shopping_cart = {}
@@ -96,33 +81,20 @@ def remove_from_shopping_cart():
   if not (flask.request.args and "session_id" in flask.request.args):
     return flask.jsonify({"status": "error: session_id not found"})
   session_id = flask.request.args["session_id"]
-  session_doc_ref = db.collection("store_sessions").document(session_id)
+  session_doc_ref = db.collection("google_store_sessions").document(session_id)
   session_doc = session_doc_ref.get().to_dict()
 
   product = flask.request.get_json()["product"]
   quantity = flask.request.get_json()["quantity"]
   shopping_cart = {}
   if session_doc and "shopping_cart" in session_doc:
-    shopping_cart = session_doc["shopping_cart"]   
+    shopping_cart = session_doc["shopping_cart"]
   if product not in shopping_cart:
     return {"status": "error: product not found"}
-
   shopping_cart[product] = shopping_cart[product] - quantity
   if shopping_cart[product] <= 0:
     shopping_cart.pop(product, None)
   session_doc_ref.set({"shopping_cart": shopping_cart}, merge=True)
-
-  ### 開発中 ###
-  product_doc_ref = db.collection('products').document(product)
-  product_dict = product_doc_ref.get().to_dict()
-
-  print(product_dict)
-  product_dict["quantity"] = product_dict["quantity"] + quantity
-  print(product_dict)
-
-  product_doc_ref.set(product_dict, merge=True)
-  #############
-
   return {"status": "success", "shopping_cart": shopping_cart}
 
 
@@ -136,7 +108,7 @@ def place_order():
   if not (flask.request.args and "session_id" in flask.request.args):
     return flask.jsonify({"status": "error: session_id not found"})
   session_id = flask.request.args["session_id"]
-  session_doc_ref = db.collection("store_sessions").document(session_id)
+  session_doc_ref = db.collection("google_store_sessions").document(session_id)
   session_doc = session_doc_ref.get().to_dict()
 
   shopping_cart = {}
@@ -185,8 +157,8 @@ def get_product_names():
     query = product_doc_ref.where(filter=FieldFilter("category", "==", input_category))
     sort_name_docs = query.get()
     for sort_name_doc in sort_name_docs:
-      sort_name = sort_name_doc.id
-      product_name_list.append(sort_name)
+      sort_name = sort_name_doc.to_dict()
+      product_name_list.append(sort_name["name"])
   return {"status": "success", "product_names": product_name_list}
 
 @app.post("/get_categories")

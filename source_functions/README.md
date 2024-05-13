@@ -28,7 +28,7 @@ session_id=12345
 # add_to_shopping_cart
 curl -X POST http://127.0.0.1:5000/add_to_shopping_cart?session_id=$session_id \
 -H "Content-Type: application/json" \
--d '{"product": "MacBook Pro", "quantity": 1}'
+-d '{"product": "MacBook Pro", "quantity": 3}'
 
 # view_shopping_cart
 curl -X POST http://127.0.0.1:5000/view_shopping_cart?session_id=$session_id

@@ -32,7 +32,12 @@ product_inventory_list = [
     },
 ]
 
+# 商品在庫の削除
+for product_inventory in product_inventory_list:
+    db.collection("products").document(product_inventory["name"]).delete()
+print("Delete complate.")
 
+# 商品在庫の作成
 for product_inventory in product_inventory_list:
     db.collection("products").document(product_inventory["name"]).set(
         {
